@@ -34,8 +34,3 @@ spec:
   selector:
     matchLabels:
       app: node-app
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: nodejs-jenkins
