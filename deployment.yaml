@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: nodejs
-          image: 500750061763.dkr.ecr.us-east-1.amazonaws.com/nodejs-k8s:%BUILD_TAG%
+          image: nginx
           ports:
             - containerPort: 3000
     selector:
