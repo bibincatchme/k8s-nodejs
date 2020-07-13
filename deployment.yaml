@@ -1,6 +1,8 @@
 apiVersion: v1
 kind: Service
 metadata:
+  labels:
+    app: nodeapp
   name: node-service
 spec:
   type: NodePort
@@ -10,7 +12,7 @@ spec:
     port: 80
     nodePort: 32000
   selector:
-    app: node-app
+    app: nodeapp
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -24,7 +26,7 @@ spec:
     metadata:
       name: node-helloworld
       labels:
-        app: node-app
+        app: nodeapp
     spec:
       containers:
         - name: nodejs
@@ -33,4 +35,4 @@ spec:
             - containerPort: 80
   selector:
     matchLabels:
-      app: node-app
+      app: nodeapp
