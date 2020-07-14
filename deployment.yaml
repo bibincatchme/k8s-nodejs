@@ -21,7 +21,6 @@ metadata:
   labels:
     app: nodeapp
 spec:
-  serviceAccountName: jenkins
   replicas: 2
   template:
     metadata:
@@ -37,3 +36,8 @@ spec:
   selector:
     matchLabels:
       app: nodeapp
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jenkins
