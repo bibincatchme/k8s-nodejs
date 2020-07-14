@@ -14,28 +14,16 @@ spec:
   selector:
     app: nodeapp
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
-  name: node-deployment
+  name: nodeapp
   labels:
     app: nodeapp
 spec:
-  replicas: 2
-  template:
-    metadata:
-      name: node-helloworld
-      labels:
-        app: nodeapp
-    spec:
-      containers:
-        - name: nodejs
-          image: nginx
-          ports:
-            - containerPort: 80
-  selector:
-    matchLabels:
-      app: nodeapp
+ containers:
+  - name: nginx-containers
+    image: nginx
 ---
 apiVersion: v1
 kind: Namespace
