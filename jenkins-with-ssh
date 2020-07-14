@@ -1,0 +1,96 @@
+pipeline {
+  agent {
+    kubernetes {
+      label 'jenkins-slave'  // all your pods will be named with this prefix, followed by a unique id
+    }
+  }
+    environment 
+    {
+        ECRURL = 'http://500750061763.dkr.ecr.us-east-1.amazonaws.com'
+        ECRCRED = 'ecr:us-east-1:awsecrid'
+        repository = '500750061763.dkr.ecr.us-east-1.amazonaws.com/nodejs-k8s'
+        repository_name  = 'nodejs-k8s'
+        remoteImageTag  = "${env.BUILD_ID}"
+ 
+    }
+
+  stages {
+    stage('Build') {
+      steps {  // no container directive is needed as the maven container is the default
+            sh 'whoami'
+            sh 'hostname -i'
+            sh 'git clone -b master https://github.com/bibincatchme/k8s-nodejs.git'
+            sh 'cd k8s-nodejs'
+            sh 'docker --version'  
+      }
+    }
+    stage('Build Docker Image') {
+      steps { 
+          dir('k8s-nodejs') {
+          sh 'ls'
+                script
+                {
+                echo 'Building the Docker image...'
+                docker.build("$repository_name")
+
+                }
+        } 
+        }
+      }
+        stage('Docker Push')
+        {
+            steps
+            {
+                script
+                {
+                echo 'Pushing the Docker images to ECR'
+                docker.withRegistry(ECRURL, ECRCRED) {
+                    docker.image("$repository_name").push("latest")
+                    docker.image("$repository_name").push("${remoteImageTag}")
+                    }
+                }
+            }
+        }
+
+
+      stage('Deploy App') {
+      steps {
+        script {
+           dir('k8s-nodejs') {
+         sshagent(['kubectl-server']) {
+           sh "scp -o StrictHostKeyChecking=no deployment.yaml ec2-user@ec2-34-204-60-90.compute-1.amazonaws.com:/home/ec2-user/"
+           script {
+             try {
+               sh "ssh ec2-user@ec2-34-204-60-90.compute-1.amazonaws.com kubectl apply -f deployment.yaml"
+             }
+             catch(error){
+               sh "ssh ec2-user@ec2-34-204-60-90.compute-1.amazonaws.com kubectl apply -f deployment.yaml"
+             }
+           }
+}
+        }
+      }
+    }
+        }
+
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+        stage('Deploy App') {
+      steps {
+        script {
+           dir('k8s-nodejs') {
+         kubernetesDeploy configs: 'deployment.yaml', dockerCredentials: [[credentialsId: 'ecr:us-east-1:awsecrid', url: 'http://500750061763.dkr.ecr.us-east-1.amazonaws.com/nodejs-k8s']], kubeConfig: [path: ''], kubeconfigId: 'mykubeconfig', secretName: 'bibin', ssh: [sshCredentialsId: '*', sshServer: ''], textCredentials: [certificateAuthorityData: '', clientCertificateData: '', clientKeyData: '', serverUrl: 'https://']
+        }
+      }
+    }
+        }
