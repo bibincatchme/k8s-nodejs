@@ -8,22 +8,34 @@ spec:
   type: NodePort
   ports:
   - protocol: TCP
-    targetPort: 80
-    port: 80
+    targetPort: 3000
+    port: 3000
     nodePort: 32000
   selector:
     app: nodeapp
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: nodeapp
+  name: node-deployment
   labels:
     app: nodeapp
 spec:
- containers:
-  - name: nginx-containers
-    image: nginx
+  replicas: 2
+  template:
+    metadata:
+      name: node-helloworld
+      labels:
+        app: nodeapp
+    spec:
+      containers:
+        - name: nodejs
+          image: 500750061763.dkr.ecr.us-east-1.amazonaws.com/nodejs-k8s:latest
+          ports:
+            - containerPort: 3000
+  selector:
+    matchLabels:
+      app: nodeapp
 ---
 apiVersion: v1
 kind: Namespace
