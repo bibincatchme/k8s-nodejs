@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: nodejs
-          image: 500750061763.dkr.ecr.us-east-1.amazonaws.com/nodejs-k8s:latest
+          image: nginx
           ports:
             - containerPort: 3000
   selector:
@@ -40,4 +40,4 @@ spec:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: nodeapp
+  name: jenkins
