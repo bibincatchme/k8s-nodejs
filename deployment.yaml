@@ -29,15 +29,12 @@ spec:
         app: nodeapp
     spec:
       containers:
-        - name: nodejs
-          image: nginx
+        - name: nodejs-private-reg-container
+          image: bibincatchme/nodejs:6
           ports:
             - containerPort: 3000
+      imagePullSecrets:
+        - name: imagereg      
   selector:
     matchLabels:
       app: nodeapp
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: jenkins
