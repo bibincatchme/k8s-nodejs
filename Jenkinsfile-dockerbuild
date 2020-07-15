@@ -41,3 +41,63 @@ podTemplate(label: 'mypod', containers: [
     
     }
   }
+
+
+
+#another way
+pipeline {
+  agent {
+    kubernetes {
+      label 'jenkins-slave'  // all your pods will be named with this prefix, followed by a unique id
+    }
+  }
+    environment 
+    {
+        ECRURL = 'http://500750061763.dkr.ecr.us-east-1.amazonaws.com'
+        ECRCRED = 'ecr:us-east-1:awsecrid'
+        repository = '500750061763.dkr.ecr.us-east-1.amazonaws.com/nodejs-k8s'
+        repository_name  = 'nodejs-k8s'
+        remoteImageTag  = "${env.BUILD_ID}"
+ 
+    }
+
+  stages {
+    stage('Build') {
+      steps {  // no container directive is needed as the maven container is the default
+            sh 'whoami'
+            sh 'hostname -i'
+            sh 'git clone -b master https://github.com/bibincatchme/k8s-nodejs.git'
+            sh 'cd k8s-nodejs'
+            sh 'docker --version'  
+      }
+    }
+    stage('Build Docker Image') {
+      steps { 
+          dir('k8s-nodejs') {
+          sh 'ls'
+                script
+                {
+                echo 'Building the Docker image...'
+                docker.build("$repository_name")
+
+                }
+        } 
+        }
+      }
+        stage('Docker Push')
+        {
+            steps
+            {
+                script
+                {
+                echo 'Pushing the Docker images to ECR'
+                docker.withRegistry(ECRURL, ECRCRED) {
+                    docker.image("$repository_name").push("latest")
+                    docker.image("$repository_name").push("${remoteImageTag}")
+                    }
+                }
+            }
+        }
+        
+  }
+}
