@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: nodejs-private-reg-container
-          image: bibincatchme/nodejs:remoteImageTag
+          image: bibincatchme/nodejs:latest
           ports:
             - containerPort: 3000
       imagePullSecrets:
