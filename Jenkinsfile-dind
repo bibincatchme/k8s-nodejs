@@ -1,0 +1,58 @@
+containers:
+  - name: my-main-container
+    # ...
+    # other container config here
+    # ...
+    env:
+    - name: DOCKER_HOST
+      value: tcp://localhost:2375
+  - name: dind
+    image: docker:18.05-dind
+    securityContext:
+      privileged: true
+    volumeMounts:
+      - name: dind-storage
+        mountPath: /var/lib/docker
+volumes:
+  - name: dind-storage
+    emptyDir: {}
+
+
+dind
+docker:18.06.1-ce-dind
+
+
+podTemplate(label: 'mypod', containers: [
+    containerTemplate(name: 'docker', image: 'docker:18.06.1-ce-dind', ttyEnabled: true, alwaysPullImage: true, privileged: true,
+      command: 'dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2375 --storage-driver=overlay')
+  ],
+  volumes: [emptyDirVolume(memory: false, mountPath: '/var/lib/docker')]) {
+
+    node ('mypod') {
+        stage 'Run a docker thing'
+        container('docker') {
+            stage 'Docker thing1'
+            sh 'docker pull redis'
+        }
+
+    }
+  } 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  Docker in Docker
+Docker in Docker means that we run a Docker container which runs it’s own Docker daemon, thus the name Docker in Docker. 
+This is the approach that we’re currently using at Hootsuite. The advantages of this approach are that it’s still pretty easy to set up 
+and it’s backwards compatible with Jenkins jobs that are already building Docker images using docker build . 
+The security is also better than Docker out of Docker since our Pod doesn’t need to be privileged (although the Docker in Docker 
+container does still need to be privileged) and our Jenkins slaves can’t access the other containers running on the same Kubernetes worker.
